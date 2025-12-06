@@ -30,6 +30,7 @@ app.use('/api/reviews', reviewRoutes);
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || '';
 
+// Connect to MongoDB
 mongoose
   .connect(MONGO_URI)
   .then(() => {
