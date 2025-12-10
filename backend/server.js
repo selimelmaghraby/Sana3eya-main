@@ -9,28 +9,24 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Routes
 const reviewRoutes = require('./routes/reviewRoutes');
+const authRoutes = require('./routes/authRoutes');
+const trackingRoutes = require('./routes/trackingRoutes'); // Teleb's routes
 
 // Simple test route
-
 app.get('/', (req, res) => {
   res.send('Sana3eya API is running');
 });
 
 app.use('/api/reviews', reviewRoutes);
-
-
-
-
-
-// TODO: we will add: const reviewRoutes = require('./routes/reviewRoutes');
-// and app.use('/api/reviews', reviewRoutes); later
+app.use('/api/auth', authRoutes);
+app.use('/api/tracking', trackingRoutes); // Teleb's endpoints
 
 // Connect to MongoDB and start server
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || '';
 
-// Connect to MongoDB
 mongoose
   .connect(MONGO_URI)
   .then(() => {
@@ -42,3 +38,4 @@ mongoose
   .catch((err) => {
     console.error('MongoDB connection error:', err.message);
   });
+
