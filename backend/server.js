@@ -13,6 +13,8 @@ app.use(express.json());
 const reviewRoutes = require('./routes/reviewRoutes');
 const authRoutes = require('./routes/authRoutes');
 const trackingRoutes = require('./routes/trackingRoutes'); // Teleb's routes
+const favoritesRoutes = require('./routes/favoritesRoutes');
+const jobRoutes = require('./routes/jobRoutes');
 
 // Simple test route
 app.get('/', (req, res) => {
@@ -22,6 +24,8 @@ app.get('/', (req, res) => {
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/tracking', trackingRoutes); // Teleb's endpoints
+app.use('/api/favorites', favoritesRoutes);
+app.use('/api/jobs', jobRoutes);
 
 // Connect to MongoDB and start server
 const PORT = process.env.PORT || 5000;
