@@ -16,7 +16,7 @@ const reviewsData = [
   {
     id: 3,
     reviewer: "Guest",
-    rating: 5,
+    rating: 1,
     comment: "Excellent service, highly recommended.",
     date: "2025-01-15",
   },

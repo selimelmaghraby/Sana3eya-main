@@ -1,20 +1,6 @@
-function AuthPage() {
+function RegisterPage() {
   return (
     <div>
-      <h2>Login</h2>
-
-      <form>
-        <input type="email" placeholder="Email" />
-        <br /><br />
-
-        <input type="password" placeholder="Password" />
-        <br /><br />
-
-        <button type="submit">Login</button>
-      </form>
-
-      <hr />
-
       <h2>Register</h2>
 
       <form>
@@ -39,4 +25,4 @@ function AuthPage() {
   );
 }
 
-export default AuthPage;
+export default RegisterPage;
