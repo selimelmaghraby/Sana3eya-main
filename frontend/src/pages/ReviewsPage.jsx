@@ -1,48 +1,49 @@
-import reviewsData from "../data/reviewsData";
+import { useState } from "react";
+import axios from "axios";
 
 function ReviewsPage() {
+  const [reviewee, setReviewee] = useState("");
+  const [job, setJob] = useState("");
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+
+  const token = localStorage.getItem("token");
+
+  const submit = async (e) => {
+    e.preventDefault();
+    await axios.post(
+      "http://localhost:5000/api/reviews",
+      { reviewee, job, rating, comment },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    alert("Review submitted");
+  };
+
   return (
-    <div>
-      <h2>Worker Reviews</h2>
-
-      {reviewsData.map((review) => (
-        <div
-          key={review.id}
-          style={{
-            border: "1px solid #ccc",
-            padding: "10px",
-            marginBottom: "10px",
-          }}
-        >
-          <h4>{review.reviewer}</h4>
-          <p>Rating: ⭐ {review.rating} / 5</p>
-          <p>{review.comment}</p>
-          <small>{review.date}</small>
-        </div>
-      ))}
-
-      <h3>Add Review</h3>
-
-      <form>
-        <input type="text" placeholder="Your Name" />
+    <div style={boxStyle}>
+      <h2>Submit Review</h2>
+      <form onSubmit={submit}>
+        <input placeholder="Reviewee User ID" onChange={(e) => setReviewee(e.target.value)} />
         <br /><br />
-
-        <select>
-          <option>5</option>
-          <option>4</option>
-          <option>3</option>
-          <option>2</option>
-          <option>1</option>
-        </select>
+        <input placeholder="Job ID" onChange={(e) => setJob(e.target.value)} />
         <br /><br />
-
-        <textarea placeholder="Write your review"></textarea>
+        <input type="number" value={rating} onChange={(e) => setRating(e.target.value)} />
         <br /><br />
-
-        <button type="submit">Submit Review</button>
+        <textarea placeholder="Comment" onChange={(e) => setComment(e.target.value)} />
+        <br /><br />
+        <button>Submit</button>
       </form>
     </div>
   );
 }
+
+const boxStyle = {
+  maxWidth: "450px",
+  margin: "40px auto",
+  background: "white",
+  padding: "30px",
+  borderRadius: "10px",
+  boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
+};
 
 export default ReviewsPage;

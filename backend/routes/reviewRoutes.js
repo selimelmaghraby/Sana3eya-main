@@ -1,19 +1,19 @@
-const express = require('express');
-const Review = require('../models/reviewModel');
-
+const express = require("express");
 const router = express.Router();
+const Review = require("../models/reviewModel");
+const authMiddleware = require("../middleware/authMiddleware");
 
-// POST /api/reviews
-router.post('/', async (req, res) => {
+// CREATE REVIEW (Milestone 3 safe logic)
+router.post("/", authMiddleware, async (req, res) => {
   try {
-    const { reviewer, reviewee, job, rating, comment } = req.body;
+    const { reviewee, job, rating, comment } = req.body;
 
-    if (!reviewer || !reviewee || !job || !rating) {
-      return res.status(400).json({ message: 'Missing required fields' });
+    if (!reviewee || !job || !rating) {
+      return res.status(400).json({ message: "Missing fields" });
     }
 
     const review = await Review.create({
-      reviewer,
+      reviewer: req.user.id,
       reviewee,
       job,
       rating,
@@ -21,81 +21,25 @@ router.post('/', async (req, res) => {
     });
 
     res.status(201).json(review);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Review failed" });
   }
 });
 
-// GET /api/reviews/user/:userId
-router.get('/user/:userId', async (req, res) => {
+// GET ALL REVIEWS
+router.get("/", async (req, res) => {
   try {
-    const { userId } = req.params;
-
-    const reviews = await Review.find({ reviewee: userId })
-      .populate('reviewer', 'name')
-      .populate('job', 'title');
+    const reviews = await Review.find()
+      .populate("reviewer", "name")
+      .populate("reviewee", "name");
 
     res.json(reviews);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// GET /api/reviews/reviewer/:userId
-router.get('/reviewer/:userId', async (req, res) => {
-  try {
-    const { userId } = req.params;
-
-    const reviews = await Review.find({ reviewer: userId })
-      .populate('reviewee', 'name')
-      .populate('job', 'title');
-
-    res.json(reviews);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// PUT /api/reviews/:id
-router.put('/:id', async (req, res) => {
-  try {
-    const { rating, comment } = req.body;
-
-    const review = await Review.findById(req.params.id);
-
-    if (!review) {
-      return res.status(404).json({ message: 'Review not found' });
-    }
-
-    if (rating !== undefined) review.rating = rating;
-    if (comment !== undefined) review.comment = comment;
-
-    await review.save();
-    res.json(review);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// DELETE /api/reviews/:id
-router.delete('/:id', async (req, res) => {
-  try {
-    const review = await Review.findById(req.params.id);
-
-    if (!review) {
-      return res.status(404).json({ message: 'Review not found' });
-    }
-
-    await review.deleteOne();
-    res.json({ message: 'Review removed' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch reviews" });
   }
 });
 
 module.exports = router;
+
+

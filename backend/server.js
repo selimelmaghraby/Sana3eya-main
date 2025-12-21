@@ -1,45 +1,40 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config();
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+require("dotenv").config();
 
 const app = express();
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
 // Routes
-const reviewRoutes = require('./routes/reviewRoutes');
-const authRoutes = require('./routes/authRoutes');
-const trackingRoutes = require('./routes/trackingRoutes'); // Teleb's routes
-const favoritesRoutes = require('./routes/favoritesRoutes');
-const jobRoutes = require('./routes/jobRoutes');
+const authRoutes = require("./routes/authRoutes");
+const jobRoutes = require("./routes/jobRoutes");
+const reviewRoutes = require("./routes/reviewRoutes");
+const trackingRoutes = require("./routes/trackingRoutes");
+const favoriteRoutes = require("./routes/favoriteRoutes");
 
-// Simple test route
-app.get('/', (req, res) => {
-  res.send('Sana3eya API is running');
+// Test route
+app.get("/", (req, res) => {
+  res.send("Sana3eya API is running");
 });
 
-app.use('/api/reviews', reviewRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/tracking', trackingRoutes); // Teleb's endpoints
-app.use('/api/favorites', favoritesRoutes);
-app.use('/api/jobs', jobRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/jobs", jobRoutes);
+app.use("/api/reviews", reviewRoutes);
+app.use("/api/tracking", trackingRoutes);
+app.use("/api/favorites", favoriteRoutes);
 
-// Connect to MongoDB and start server
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI || '';
 
 mongoose
-  .connect(MONGO_URI)
+  .connect(process.env.MONGO_URI)
   .then(() => {
-    console.log('MongoDB connected');
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
+    console.log("MongoDB connected");
+    app.listen(PORT, () =>
+      console.log(`Server running on port ${PORT}`)
+    );
   })
-  .catch((err) => {
-    console.error('MongoDB connection error:', err.message);
-  });
+  .catch((err) => console.error(err));
 

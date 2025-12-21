@@ -1,122 +1,83 @@
-const express = require('express');
-const Job = require('../models/jobModel');
-const { protect } = require('../middleware/authMiddleware');
-
+const express = require("express");
 const router = express.Router();
+const authMiddleware = require("../middleware/authMiddleware");
+const Job = require("../models/jobModel");
 
-/**
- * POST /api/jobs
- * Client posts a job
- */
-router.post('/', protect, async (req, res) => {
+// CREATE JOB (client)
+router.post("/", authMiddleware, async (req, res) => {
   try {
-    const { title, description, budget, location, skillsRequired } = req.body;
+    const { title, description, budget, location } = req.body;
 
-    if (!title || !budget) {
-      return res.status(400).json({ message: 'Title and budget are required' });
-    }
-
-    const job = new Job({
+    const job = await Job.create({
       title,
       description,
       budget,
       location,
-      skillsRequired,
-      client: req.user._id,
+      client: req.user.id,
+      status: "open",
     });
 
-    await job.save();
     res.status(201).json(job);
-  } catch (err) {
-    console.error('Create job error:', err);
-    res.status(500).json({ message: 'Server error' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Job creation failed" });
   }
 });
 
-/**
- * GET /api/jobs
- * Get all jobs (optionally filter by skills/location)
- */
-router.get('/', async (req, res) => {
+// GET ALL JOBS
+router.get("/", async (req, res) => {
   try {
-    const { skills, location } = req.query;
+    const jobs = await Job.find()
+      .populate("client", "name")
+      .populate("assignedWorker", "name");
 
-    let query = {};
-
-    if (skills) {
-      query.skillsRequired = { $in: skills.split(',') };
-    }
-
-    if (location) {
-      query.location = { $regex: location, $options: 'i' };
-    }
-
-    const jobs = await Job.find(query).populate('client', 'name').populate('assignedWorker', 'name');
     res.json(jobs);
-  } catch (err) {
-    console.error('Get jobs error:', err);
-    res.status(500).json({ message: 'Server error' });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch jobs" });
   }
 });
 
-/**
- * POST /api/jobs/:id/apply
- * Worker applies to a job
- */
-router.post('/:id/apply', protect, async (req, res) => {
+// ASSIGN WORKER TO JOB
+router.put("/:jobId/assign", authMiddleware, async (req, res) => {
   try {
-    const job = await Job.findById(req.params.id);
+    const { workerId } = req.body;
 
+    const job = await Job.findById(req.params.jobId);
     if (!job) {
-      return res.status(404).json({ message: 'Job not found' });
+      return res.status(404).json({ message: "Job not found" });
     }
 
-    const alreadyApplied = job.applicants.includes(req.user._id);
-
-    if (alreadyApplied) {
-      return res.status(400).json({ message: 'You already applied to this job' });
+    // Only job owner can assign
+    if (job.client.toString() !== req.user.id) {
+      return res.status(403).json({ message: "Not authorized" });
     }
 
-    job.applicants.push(req.user._id);
+    job.assignedWorker = workerId;
+    job.status = "in_progress";
     await job.save();
 
-    res.json({ message: 'Applied successfully', job });
-  } catch (err) {
-    console.error('Apply job error:', err);
-    res.status(500).json({ message: 'Server error' });
+    res.json(job);
+  } catch (error) {
+    res.status(500).json({ message: "Assignment failed" });
   }
 });
 
-/**
- * PATCH /api/jobs/:id/match
- * Automatically match a worker to the job based on skills
- */
-router.patch('/:id/match', protect, async (req, res) => {
+// MARK JOB AS COMPLETED
+router.put("/:jobId/complete", authMiddleware, async (req, res) => {
   try {
-    const job = await Job.findById(req.params.id);
-
+    const job = await Job.findById(req.params.jobId);
     if (!job) {
-      return res.status(404).json({ message: 'Job not found' });
+      return res.status(404).json({ message: "Job not found" });
     }
 
-    const worker = await User.findOne({
-      skills: { $in: job.skillsRequired }, // Match based on skills
-    });
-
-    if (!worker) {
-      return res.status(404).json({ message: 'No worker found with the required skills' });
-    }
-
-    job.assignedWorker = worker._id;
-    job.status = 'in_progress'; // Update job status
-
+    job.status = "completed";
     await job.save();
 
-    res.json({ message: 'Worker assigned successfully', job });
-  } catch (err) {
-    console.error('Match job error:', err);
-    res.status(500).json({ message: 'Server error' });
+    res.json(job);
+  } catch (error) {
+    res.status(500).json({ message: "Completion failed" });
   }
 });
 
 module.exports = router;
+
