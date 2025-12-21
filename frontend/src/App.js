@@ -38,6 +38,7 @@ function App() {
     <>
       <nav style={navStyle}>
         <strong style={{ fontSize: 20 }}>Sana3eya</strong>
+
         <Link to="/jobs">Jobs</Link>
         <Link to="/reviews">Reviews</Link>
         <Link to="/tracking">Tracking</Link>
@@ -57,10 +58,10 @@ function App() {
       </nav>
 
       <Routes>
-        <Route path="/jobs" element={<JobsPage />} />
-        <Route path="/reviews" element={<ReviewsPage />} />
-        <Route path="/tracking" element={<TrackingPage />} />
-        <Route path="/favorites" element={<FavoritesPage />} />
+        <Route path="/jobs" element={<JobsPage role={role} />} />
+        <Route path="/reviews" element={<ReviewsPage role={role} />} />
+        <Route path="/tracking" element={<TrackingPage role={role} />} />
+        <Route path="/favorites" element={<FavoritesPage role={role} />} />
         <Route path="*" element={<Navigate to="/jobs" />} />
       </Routes>
     </>
@@ -92,4 +93,5 @@ const logoutBtn = {
 };
 
 export default App;
+
 

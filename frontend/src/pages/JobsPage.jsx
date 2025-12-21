@@ -9,7 +9,7 @@ function JobsPage() {
 
   const token = localStorage.getItem("token");
 
-  // Fetch jobs
+  // FETCH JOBS
   const fetchJobs = async () => {
     const res = await axios.get("http://localhost:5000/api/jobs");
     setJobs(res.data);
@@ -19,7 +19,7 @@ function JobsPage() {
     fetchJobs();
   }, []);
 
-  // Create job
+  // CREATE JOB (ANY USER)
   const submitJob = async (e) => {
     e.preventDefault();
 
@@ -34,8 +34,7 @@ function JobsPage() {
         }
       );
 
-      // 🔥 SHOW JOB ID IMMEDIATELY
-      alert(`Job created successfully!\n\nJob ID:\n${res.data.job._id}`);
+      alert("Job created!\nJob ID:\n" + res.data.job._id);
 
       setTitle("");
       setDescription("");
@@ -43,10 +42,11 @@ function JobsPage() {
       fetchJobs();
     } catch (err) {
       alert("Failed to create job");
+      console.log(err);
     }
   };
 
-  // Add to favorites
+  // ADD TO FAVORITES
   const addToFavorites = async (jobId) => {
     try {
       await axios.post(
@@ -58,97 +58,78 @@ function JobsPage() {
           },
         }
       );
-      alert("Added to favorites ❤️");
-    } catch (err) {
+      alert("Added to favorites");
+    } catch {
       alert("Already in favorites or error");
     }
   };
 
   return (
     <div style={{ padding: "30px" }}>
-      {/* CREATE JOB */}
-      <div
-        style={{
-          maxWidth: "500px",
-          background: "white",
-          padding: "25px",
-          borderRadius: "10px",
-          boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
-          marginBottom: "40px",
-        }}
-      >
-        <h2>Create Job</h2>
+      <h2>Create Job</h2>
 
-        <form onSubmit={submitJob}>
-          <input
-            placeholder="Job Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <br /><br />
+      <form onSubmit={submitJob}>
+        <input
+          placeholder="Job Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        <br /><br />
 
-          <textarea
-            placeholder="Job Description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-          <br /><br />
+        <textarea
+          placeholder="Job Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+        <br /><br />
 
-          <input
-            type="number"
-            placeholder="Budget (EGP)"
-            value={budget}
-            onChange={(e) => setBudget(e.target.value)}
-          />
-          <br /><br />
+        <input
+          type="number"
+          placeholder="Budget"
+          value={budget}
+          onChange={(e) => setBudget(e.target.value)}
+        />
+        <br /><br />
 
-          <button type="submit">Create Job</button>
-        </form>
-      </div>
+        <button type="submit">Add Job</button>
+      </form>
 
-      {/* JOB LIST */}
-      <h2>Available Jobs</h2>
+      <hr />
+
+      <h2>All Jobs</h2>
 
       {jobs.length === 0 && <p>No jobs yet</p>}
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-          gap: "20px",
-        }}
-      >
-        {jobs.map((job) => (
-          <div
-            key={job._id}
-            style={{
-              background: "white",
-              padding: "20px",
-              borderRadius: "10px",
-              boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
-            }}
-          >
-            <h3>{job.title}</h3>
-            <p>{job.description}</p>
-            <p><strong>Budget:</strong> {job.budget} EGP</p>
+      {jobs.map((job) => (
+        <div
+          key={job._id}
+          style={{
+            background: "white",
+            padding: "15px",
+            borderRadius: "10px",
+            marginBottom: "15px",
+          }}
+        >
+          <h4>{job.title}</h4>
+          <p>{job.description}</p>
+          <p>
+            <strong>Budget:</strong> {job.budget}
+          </p>
+          <p style={{ fontSize: "12px", color: "#555" }}>
+            Job ID: {job._id}
+          </p>
 
-            {/* 🔑 SHOW JOB ID */}
-            <p style={{ fontSize: "12px", color: "#555" }}>
-              <strong>Job ID:</strong> {job._id}
-            </p>
-
-            <button
-              style={{ marginTop: "10px" }}
-              onClick={() => addToFavorites(job._id)}
-            >
-              ❤️ Add to Favorites
-            </button>
-          </div>
-        ))}
-      </div>
+          <button onClick={() => addToFavorites(job._id)}>
+            ⭐ Add to Favorites
+          </button>
+        </div>
+      ))}
     </div>
   );
 }
 
 export default JobsPage;
+
+
+
 

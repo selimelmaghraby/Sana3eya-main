@@ -1,89 +1,49 @@
-const express = require('express');
-const Favorite = require('../models/favoriteModel');
-const { protect } = require('../middleware/authMiddleware');
-
+const express = require("express");
 const router = express.Router();
+const authMiddleware = require("../middleware/authMiddleware");
+const Favorite = require("../models/favoriteModel");
 
-/**
- * POST /api/favorites/saveJob
- * Save a job to the user's favorites
- */
-router.post('/saveJob', protect, async (req, res) => {
+// ADD TO FAVORITES
+router.post("/:jobId", authMiddleware, async (req, res) => {
   try {
-    const { jobId } = req.body;
+    const exists = await Favorite.findOne({
+      user: req.user.id,
+      job: req.params.jobId,
+    });
 
-    if (!jobId) {
-      return res.status(400).json({ message: 'Job ID is required' });
+    if (exists) {
+      return res.status(400).json({ message: "Already in favorites" });
     }
 
-    let favorites = await Favorites.findOne({ user: req.user._id });
+    const favorite = await Favorite.create({
+      user: req.user.id,
+      job: req.params.jobId,
+    });
 
-    if (!favorites) {
-      favorites = new Favorites({ user: req.user._id });
-    }
-
-    if (!favorites.savedJobs.includes(jobId)) {
-      favorites.savedJobs.push(jobId);
-    }
-
-    await favorites.save();
-
-    res.status(201).json(favorites);
-  } catch (err) {
-    console.error('Save job error:', err);
-    res.status(500).json({ message: 'Server error' });
+    res.json(favorite);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to add favorite" });
   }
 });
 
-/**
- * POST /api/favorites/saveWorker
- * Save a worker to the user's favorites
- */
-router.post('/saveWorker', protect, async (req, res) => {
+// GET FAVORITES
+router.get("/", authMiddleware, async (req, res) => {
   try {
-    const { workerId } = req.body;
-
-    if (!workerId) {
-      return res.status(400).json({ message: 'Worker ID is required' });
-    }
-
-    let favorites = await Favorites.findOne({ user: req.user._id });
-
-    if (!favorites) {
-      favorites = new Favorites({ user: req.user._id });
-    }
-
-    if (!favorites.savedWorkers.includes(workerId)) {
-      favorites.savedWorkers.push(workerId);
-    }
-
-    await favorites.save();
-
-    res.status(201).json(favorites);
-  } catch (err) {
-    console.error('Save worker error:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-/**
- * GET /api/favorites
- * Get the user's saved jobs and workers
- */
-router.get('/', protect, async (req, res) => {
-  try {
-    const favorites = await Favorites.findOne({ user: req.user._id })
-      .populate('savedJobs')
-      .populate('savedWorkers');
-
-    if (!favorites) {
-      return res.status(404).json({ message: 'Favorites not found' });
-    }
-
+    const favorites = await Favorite.find({ user: req.user.id }).populate("job");
     res.json(favorites);
-  } catch (err) {
-    console.error('Get favorites error:', err);
-    res.status(500).json({ message: 'Server error' });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch favorites" });
+  }
+});
+
+// REMOVE FAVORITE
+router.delete("/:id", authMiddleware, async (req, res) => {
+  try {
+    await Favorite.findByIdAndDelete(req.params.id);
+    res.json({ message: "Favorite removed" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to remove favorite" });
   }
 });
 
