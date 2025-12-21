@@ -1,5 +1,5 @@
 const express = require('express');
-const Favorites = require('../models/favoritesModel');
+const Favorite = require('../models/favoriteModel');
 const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
