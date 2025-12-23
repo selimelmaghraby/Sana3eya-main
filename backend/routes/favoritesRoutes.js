@@ -38,13 +38,12 @@ router.get("/", authMiddleware, async (req, res) => {
 });
 
 // REMOVE FAVORITE
-router.delete("/:id", authMiddleware, async (req, res) => {
-  try {
-    await Favorite.findByIdAndDelete(req.params.id);
-    res.json({ message: "Favorite removed" });
-  } catch (error) {
-    res.status(500).json({ message: "Failed to remove favorite" });
-  }
+router.delete("/:jobId", authMiddleware, async (req, res) => {
+  await Favorite.findOneAndDelete({
+    user: req.user.id,
+    job: req.params.jobId,
+  });
+  res.json({ message: "Favorite removed" });
 });
 
 module.exports = router;
